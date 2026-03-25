@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:clases="clr-namespace:SwipeAndBye.Clases"
+             x:Class="SwipeAndBye.MainPage">
+    <Grid>
+
+        <ScrollView BackgroundColor="Black">
+            <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto">
+                <!-- HEADER -->
+
+                <Border
+                    StrokeThickness="0"
+                    BackgroundColor="#FFFFFF"
+                    Padding="16"
+                    Margin="12"
+                    StrokeShape="RoundRectangle 16">
+
+                    <Border.Shadow>
+                        <Shadow Brush="#22000000"
+                                Offset="0,4"
+                                Radius="12"
+                                Opacity="0.4" />
+                    </Border.Shadow>
+
+                    <Grid ColumnDefinitions="*,Auto,*,Auto,*"
+                          RowDefinitions="Auto"
+                          ColumnSpacing="12"
+                          VerticalOptions="Center">
+
+                        <!-- Fotos -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Fotos"
+                                   FontSize="12"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="#888888" />
+
+                            <Label x:Name="LblFotosEncontradas"
+                                   Text="0"
+                                   FontSize="26"
+                                   HorizontalTextAlignment="Center"
+                                   FontAttributes="Bold"
+                                   TextColor="#111111" />
+                        </VerticalStackLayout>
+
+                        <!-- Separador -->
+                        <BoxView Grid.Column="1"
+                                 WidthRequest="1"
+                                 BackgroundColor="#EEEEEE"
+                                 VerticalOptions="Fill" />
+
+                        <!-- Eliminadas -->
+                        <VerticalStackLayout Grid.Column="2"
+                                             Spacing="4"
+                                             HorizontalOptions="Center">
+
+                            <Label Text="Eliminadas"
+                                   FontSize="12"
+                                   TextColor="#888888"
+                                   HorizontalTextAlignment="Center" />
+
+                            <Label x:Name="LblEliminadas"
+                                   FontSize="26"
+                                   FontAttributes="Bold"
+                                   TextColor="#E74C3C"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+
+                        <!-- Separador -->
+                        <BoxView Grid.Column="3"
+                                 WidthRequest="1"
+                                 BackgroundColor="#EEEEEE"
+                                 VerticalOptions="Fill" />
+
+                        <!-- Liberado -->
+                        <VerticalStackLayout Grid.Column="4"
+                                             Spacing="4"
+                                             HorizontalOptions="Center">
+
+                            <Label Text="Liberado"
+                                   FontSize="12"
+                                   TextColor="#888888"
+                                   HorizontalTextAlignment="Center" />
+
+                            <Label x:Name="LblAhorro"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   TextColor="#2ECC71"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+
+                <CollectionView ItemsSource="{Binding Años}" Grid.Row="1" x:Name="cv">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+
+                            <!-- EXPANDER AÑO -->
+                            <toolkit:Expander>
+                                <toolkit:Expander.Header>
+                                    <Grid Padding="10" x:DataType="clases:GrupoAño">
+                                        <Label
+                                            Text="{Binding Año}"
+                                            FontSize="18"
+                                            FontAttributes="Bold" />
+
+                                        <Label
+                                            Text="{Binding Count, StringFormat='({0})'}"
+                                            HorizontalOptions="End" />
+                                    </Grid>
+                                </toolkit:Expander.Header>
+
+                                <!-- MESES -->
+                                <CollectionView ItemsSource="{Binding Meses}">
+                                    <CollectionView.ItemsLayout>
+                                        <GridItemsLayout Orientation="Vertical"
+                                                         Span="2"
+                                                         HorizontalItemSpacing="10"
+                                                         VerticalItemSpacing="10" />
+                                    </CollectionView.ItemsLayout>
+
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+
+                                            <!-- EXPANDER MES -->
+                                            <toolkit:Expander>
+                                                <toolkit:Expander.Header>
+                                                    <VerticalStackLayout Spacing="6"
+                                                                         Padding="8"
+                                                                         x:DataType="clases:GrupoMes">
+
+                                                        <!-- Imagen -->
+                                                        <Image Source="{Binding FotoPreview}"
+                                                               HeightRequest="100"
+                                                               Aspect="AspectFill">
+
+                                                            <Image.Clip>
+                                                                <RoundRectangleGeometry CornerRadius="10"
+                                                                        Rect="0,0,200,100" />
+                                                            </Image.Clip>
+
+                                                            <Image.GestureRecognizers>
+                                                                <TapGestureRecognizer
+                                                                    Tapped="TapGestureRecognizer_OnTapped" />
+                                                            </Image.GestureRecognizers>
+                                                        </Image>
+
+                                                        <!-- Mes -->
+                                                        <Label Text="{Binding NombreMes}"
+                                                               FontSize="14"
+                                                               FontAttributes="Bold"
+                                                               HorizontalTextAlignment="Center" />
+
+                                                        <!-- Count -->
+                                                        <Label Text="{Binding Count, StringFormat='{0} fotos'}"
+                                                               FontSize="12"
+                                                               TextColor="#888888"
+                                                               HorizontalTextAlignment="Center" />
+
+                                                    </VerticalStackLayout>
+                                                </toolkit:Expander.Header>
+                                            </toolkit:Expander>
+
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </toolkit:Expander>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </ScrollView>
+
+        <Border
+            x:Name="BorderIndicator"
+            StrokeThickness="0"
+            BackgroundColor="#CC000000"
+            Padding="20"
+            StrokeShape="RoundRectangle 16"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            WidthRequest="120"
+            HeightRequest="120"
+            IsVisible="False">
+
+            <Border.Shadow>
+                <Shadow Brush="#22000000"
+                        Offset="0,4"
+                        Radius="12"
+                        Opacity="0.4" />
+            </Border.Shadow>
+
+            <ActivityIndicator
+                x:Name="Indicator"
+                IsRunning="True"
+                IsVisible="True"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Color="White"
+                WidthRequest="40"
+                HeightRequest="40" />
+
+        </Border>
+    </Grid>
+</ContentPage>

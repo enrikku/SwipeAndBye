@@ -1,0 +1,42 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SwipeAndBye.Pages.PageSwipe">
+
+    <Grid RowDefinitions="*,Auto">
+        <!-- Imagen -->
+        <Image x:Name="ImgActual"
+               Aspect="AspectFit"
+               Grid.Row="0">
+            <Image.GestureRecognizers>
+                <PanGestureRecognizer PanUpdated="OnPanUpdated" />
+            </Image.GestureRecognizers>
+        </Image>
+
+        <!-- Botones -->
+        <Grid Grid.Row="1" Padding="20" ColumnDefinitions="*,*">
+
+            <!-- Eliminar -->
+            <ImageButton
+                Source="x.png"
+                BackgroundColor="#FF4C4C"
+                WidthRequest="70"
+                HeightRequest="70"
+                CornerRadius="35"
+                HorizontalOptions="Center"
+                x:Name="BtnDelete"
+                Clicked="BtnDelete_OnClicked" />
+
+            <!-- Conservar -->
+            <ImageButton
+                Grid.Column="1"
+                Source="like.png"
+                BackgroundColor="#4CAF50"
+                WidthRequest="70"
+                HeightRequest="70"
+                x:Name="BtnConservar"
+                CornerRadius="35"
+                HorizontalOptions="Center"
+                Clicked="BtnConservar_OnClicked" />
+        </Grid>
+    </Grid>
+</ContentPage>
