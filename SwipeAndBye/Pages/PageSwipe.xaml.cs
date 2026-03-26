@@ -10,8 +10,7 @@ public partial class PageSwipe
         _fotos = fotos;
     }
 
-    #endregion
-
+    #endregion Constructor
 
     #region "Variables"
 
@@ -21,7 +20,7 @@ public partial class PageSwipe
     private double _startX;
     private double _totalX;
 
-    #endregion
+    #endregion "Variables"
 
     #region "Eventos"
 
@@ -48,7 +47,7 @@ public partial class PageSwipe
         return true;
     }
 
-    #endregion
+    #endregion "Eventos de Pagina"
 
     #region "Eventos de Boton"
 
@@ -62,7 +61,7 @@ public partial class PageSwipe
         SwipeDerecha();
     }
 
-    #endregion
+    #endregion "Eventos de Boton"
 
     #region "Eventos de Pan"
 
@@ -98,10 +97,9 @@ public partial class PageSwipe
         }
     }
 
-    #endregion
+    #endregion "Eventos de Pan"
 
-    #endregion
-
+    #endregion "Eventos"
 
     #region "Funciones"
 
@@ -134,7 +132,7 @@ public partial class PageSwipe
 
     private async void SwipeIzquierda()
     {
-        var foto = _fotos[_index];
+        FotoItem foto = _fotos[_index];
         await ImgActual.TranslateTo(-1000, 0, 200);
         BorrarFoto(foto);
         SiguienteFoto();
@@ -146,7 +144,7 @@ public partial class PageSwipe
         {
             if (!File.Exists(foto.Ruta)) return;
 
-            var info = new FileInfo(foto.Ruta);
+            FileInfo info = new(foto.Ruta);
             var tamaño = info.Length;
 
             File.SetAttributes(foto.Ruta, FileAttributes.Normal);
@@ -179,5 +177,5 @@ public partial class PageSwipe
         });
     }
 
-    #endregion
+    #endregion "Funciones"
 }

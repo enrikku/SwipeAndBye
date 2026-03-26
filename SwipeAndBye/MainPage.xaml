@@ -93,7 +93,6 @@
                     </Grid>
                 </Border>
 
-
                 <CollectionView ItemsSource="{Binding Años}" Grid.Row="1" x:Name="cv">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
@@ -139,7 +138,7 @@
 
                                                             <Image.Clip>
                                                                 <RoundRectangleGeometry CornerRadius="10"
-                                                                        Rect="0,0,200,100" />
+                                                                                        Rect="0,0,200,100" />
                                                             </Image.Clip>
 
                                                             <Image.GestureRecognizers>
@@ -159,11 +158,9 @@
                                                                FontSize="12"
                                                                TextColor="#888888"
                                                                HorizontalTextAlignment="Center" />
-
                                                     </VerticalStackLayout>
                                                 </toolkit:Expander.Header>
                                             </toolkit:Expander>
-
                                         </DataTemplate>
                                     </CollectionView.ItemTemplate>
                                 </CollectionView>
@@ -202,7 +199,6 @@
                 Color="White"
                 WidthRequest="40"
                 HeightRequest="40" />
-
         </Border>
     </Grid>
 </ContentPage>

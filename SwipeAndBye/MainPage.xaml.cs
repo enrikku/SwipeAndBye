@@ -9,7 +9,7 @@ public partial class MainPage
 
     private bool _debeRecargar;
 
-    #endregion
+    #endregion Variables
 
     #region Constructor
 
@@ -18,7 +18,7 @@ public partial class MainPage
         InitializeComponent();
     }
 
-    #endregion
+    #endregion Constructor
 
     #region "Eventos"
 
@@ -41,14 +41,14 @@ public partial class MainPage
 
             if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
             {
-                var intent = new Intent(Settings.ActionManageAppAllFilesAccessPermission);
+                Intent intent = new(Settings.ActionManageAppAllFilesAccessPermission);
                 intent.SetData(Uri.Parse("package:" + AppInfo.PackageName));
                 Platform.CurrentActivity.StartActivity(intent);
             }
         }
     }
 
-    #endregion
+    #endregion "Eventos de Pagina"
 
     #region "Gesture Recognizers"
 
@@ -66,9 +66,9 @@ public partial class MainPage
         }
     }
 
-    #endregion
+    #endregion "Gesture Recognizers"
 
-    #endregion
+    #endregion "Eventos"
 
     #region "Funciones"
 
@@ -85,9 +85,9 @@ public partial class MainPage
 
             await Task.Yield();
 
-            var total = MdUtilidades.ObtenerBytesAhorrados();
-            var totalEliminadas = MdUtilidades.ObtenerImagenesEliminadas();
-            var totalFotos = MdUtilidades.ObtenerTotalFotos();
+            long total = MdUtilidades.ObtenerBytesAhorrados();
+            int totalEliminadas = MdUtilidades.ObtenerImagenesEliminadas();
+            int totalFotos = MdUtilidades.ObtenerTotalFotos();
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -100,7 +100,6 @@ public partial class MainPage
             MdUtilidades.SetTotalFotos(fotos.Count);
 
             var GrupoAño = await Task.Run(() => MdUtilidades.AgruparFotos(fotos));
-
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -124,6 +123,7 @@ public partial class MainPage
         {
             case 0:
                 return "0 B";
+
             case < 0:
                 return "-" + FormatearBytes(-bytes);
         }
@@ -131,7 +131,7 @@ public partial class MainPage
         string[] sufijos = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
 
         decimal tamaño = bytes;
-        var i = 0;
+        int i = 0;
 
         while (tamaño >= 1024 && i < sufijos.Length - 1)
         {
@@ -142,5 +142,5 @@ public partial class MainPage
         return $"{tamaño:0.##} {sufijos[i]}";
     }
 
-    #endregion
+    #endregion "Funciones"
 }

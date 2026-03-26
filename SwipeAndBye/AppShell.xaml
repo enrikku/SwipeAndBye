@@ -11,5 +11,4 @@
         Title="Swipe and Bye"
         ContentTemplate="{DataTemplate local:MainPage}"
         Route="MainPage" />
-
 </Shell>

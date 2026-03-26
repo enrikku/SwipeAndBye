@@ -13,7 +13,7 @@ public static class MdUtilidades
 
     public static List<FotoItem> ObtenerFotos(string rootPath)
     {
-        var resultado = new List<FotoItem>();
+        List<FotoItem> resultado = new();
         AnalizarDirectorio(rootPath, resultado);
         return resultado;
     }
@@ -23,7 +23,7 @@ public static class MdUtilidades
         try
         {
             // Ignorar carpetas ocultas/sistema
-            var dirAttributes = File.GetAttributes(path);
+            FileAttributes dirAttributes = File.GetAttributes(path);
             if (dirAttributes.HasFlag(FileAttributes.Hidden) || dirAttributes.HasFlag(FileAttributes.System))
                 return;
 
@@ -41,7 +41,7 @@ public static class MdUtilidades
             foreach (var file in files)
                 try
                 {
-                    var fileAttributes = File.GetAttributes(file);
+                    FileAttributes fileAttributes = File.GetAttributes(file);
 
                     if (fileAttributes.HasFlag(FileAttributes.Hidden) || fileAttributes.HasFlag(FileAttributes.System))
                         continue;
@@ -50,7 +50,7 @@ public static class MdUtilidades
                     if (!ExtensionesImagen.Contains(ext))
                         continue;
 
-                    var info = new FileInfo(file);
+                    FileInfo info = new(file);
 
                     resultado.Add(new FotoItem
                     {
@@ -90,7 +90,7 @@ public static class MdUtilidades
 
     public static List<GrupoAño> AgruparFotos(List<FotoItem> fotos)
     {
-        var resultado = fotos
+        List<GrupoAño> resultado = fotos
             .GroupBy(f => f.Fecha.Year)
             .Select(grupoAño => new GrupoAño
             {
