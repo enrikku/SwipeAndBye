@@ -5,12 +5,6 @@ namespace SwipeAndBye;
 
 public partial class MainPage
 {
-    #region Variables
-
-    private bool _debeRecargar;
-
-    #endregion Variables
-
     #region Constructor
 
     public MainPage()
@@ -28,24 +22,9 @@ public partial class MainPage
     {
         base.OnAppearing();
 
-        if (_debeRecargar || Environment.IsExternalStorageManager)
-        {
-            _debeRecargar = false;
-            await CargarDatos();
-            return;
-        }
+        if (!Environment.IsExternalStorageManager) return;
 
-        if (!Environment.IsExternalStorageManager)
-        {
-            _debeRecargar = true;
-
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
-            {
-                Intent intent = new(Settings.ActionManageAppAllFilesAccessPermission);
-                intent.SetData(Uri.Parse("package:" + AppInfo.PackageName));
-                Platform.CurrentActivity.StartActivity(intent);
-            }
-        }
+        await CargarDatos();
     }
 
     #endregion "Eventos de Pagina"
