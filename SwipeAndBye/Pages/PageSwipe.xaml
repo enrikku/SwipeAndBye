@@ -1,42 +1,92 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="SwipeAndBye.Pages.PageSwipe">
+<ContentPage
+    x:Class="SwipeAndBye.Pages.PageSwipe"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="#121212">
 
-    <Grid RowDefinitions="*,Auto">
-        <!-- Imagen -->
-        <Image x:Name="ImgActual"
-               Aspect="AspectFit"
-               Grid.Row="0">
-            <Image.GestureRecognizers>
-                <PanGestureRecognizer PanUpdated="OnPanUpdated" />
-            </Image.GestureRecognizers>
-        </Image>
+    <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Botones -->
-        <Grid Grid.Row="1" Padding="20" ColumnDefinitions="*,*">
+        <Grid Grid.Row="0" Padding="20,40,20,10">
+            <Label
+                x:Name="LblContador"
+                FontAttributes="Bold"
+                FontSize="18"
+                HorizontalOptions="Center"
+                Text=""
+                TextColor="White" />
+        </Grid>
 
-            <!-- Eliminar -->
-            <ImageButton
-                Source="x.png"
+        <Grid Grid.Row="1">
+
+            <Image x:Name="ImgActual" Aspect="AspectFit">
+
+                <Image.GestureRecognizers>
+                    <PanGestureRecognizer PanUpdated="OnPanUpdated" />
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label
+                x:Name="LblLike"
+                Margin="30"
+                FontSize="60"
+                HorizontalOptions="Start"
+                Opacity="0"
+                Rotation="-20"
+                Text="✔"
+                TextColor="#4CAF50"
+                VerticalOptions="Start" />
+
+            <Label
+                x:Name="LblDelete"
+                Margin="30"
+                FontSize="60"
+                HorizontalOptions="End"
+                Opacity="0"
+                Rotation="20"
+                Text="✖"
+                TextColor="#FF4C4C"
+                VerticalOptions="Start" />
+        </Grid>
+
+        <Grid Grid.Row="2" Padding="30,10,30,30">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Frame
+                Grid.Column="0"
                 BackgroundColor="#FF4C4C"
-                WidthRequest="70"
-                HeightRequest="70"
-                CornerRadius="35"
+                CornerRadius="40"
+                HasShadow="True"
+                HeightRequest="80"
                 HorizontalOptions="Center"
-                x:Name="BtnDelete"
-                Clicked="BtnDelete_OnClicked" />
+                VerticalOptions="Center"
+                WidthRequest="80">
 
-            <!-- Conservar -->
-            <ImageButton
-                Grid.Column="1"
-                Source="like.png"
+                <ImageButton
+                    BackgroundColor="Transparent"
+                    Clicked="BtnDelete_OnClicked"
+                    Source="x.png" />
+            </Frame>
+
+            <Frame
+                Grid.Column="2"
                 BackgroundColor="#4CAF50"
-                WidthRequest="70"
-                HeightRequest="70"
-                x:Name="BtnConservar"
-                CornerRadius="35"
+                CornerRadius="40"
+                HasShadow="True"
+                HeightRequest="80"
                 HorizontalOptions="Center"
-                Clicked="BtnConservar_OnClicked" />
+                VerticalOptions="Center"
+                WidthRequest="80">
+
+                <ImageButton
+                    BackgroundColor="Transparent"
+                    Clicked="BtnConservar_OnClicked"
+                    Source="like.png" />
+            </Frame>
         </Grid>
     </Grid>
 </ContentPage>

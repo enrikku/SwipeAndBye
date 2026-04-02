@@ -8,3 +8,5 @@ global using Microsoft.Maui.ApplicationModel;
 global using SwipeAndBye.Clases;
 global using SwipeAndBye.Modulos;
 global using SwipeAndBye.Pages;
+
+global using System.Globalization;

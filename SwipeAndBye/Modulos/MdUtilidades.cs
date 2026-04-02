@@ -22,6 +22,9 @@ public static class MdUtilidades
     {
         try
         {
+            if (path.Contains("WhatsApp Backup Excluded Stickers", StringComparison.OrdinalIgnoreCase))
+                return;
+
             // Ignorar carpetas ocultas/sistema
             FileAttributes dirAttributes = File.GetAttributes(path);
             if (dirAttributes.HasFlag(FileAttributes.Hidden) || dirAttributes.HasFlag(FileAttributes.System))

@@ -17,7 +17,6 @@ public partial class PageSwipe
     private readonly List<FotoItem> _fotos;
 
     private int _index;
-    private double _startX;
     private double _totalX;
 
     #endregion "Variables"
@@ -29,7 +28,11 @@ public partial class PageSwipe
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        MainThread.BeginInvokeOnMainThread(async () => { await MostrarActual(); });
+        MainThread.BeginInvokeOnMainThread(async () => 
+        {
+            LblContador.Text = $"{_index + 1} / {_fotos.Count}";
+            await MostrarActual(); 
+        });
     }
 
     protected override bool OnBackButtonPressed()
@@ -67,6 +70,9 @@ public partial class PageSwipe
 
     private void OnPanUpdated(object sender, PanUpdatedEventArgs e)
     {
+        LblLike.Opacity = Math.Max(0, e.TotalX / 200);
+        LblDelete.Opacity = Math.Max(0, -e.TotalX / 200);
+
         switch (e.StatusType)
         {
             case GestureStatus.Started:
@@ -167,11 +173,13 @@ public partial class PageSwipe
     private void SiguienteFoto()
     {
         _index++;
-
         MainThread.BeginInvokeOnMainThread(() =>
         {
             ImgActual.TranslationX = 0;
             ImgActual.Rotation = 0;
+
+            if(_index < _fotos.Count)
+                LblContador.Text = $"{_index + 1} / {_fotos.Count}";
 
             MostrarActual();
         });

@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace SwipeAndBye.Clases;
 
 public class GrupoMes
