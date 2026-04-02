@@ -1,5 +1,4 @@
 ﻿using Environment = Android.OS.Environment;
-using Uri = Android.Net.Uri;
 
 namespace SwipeAndBye;
 
@@ -75,10 +74,10 @@ public partial class MainPage
                 LblFotosEncontradas.Text = totalFotos.ToString();
             });
 
-            var fotos = await Task.Run(() => MdUtilidades.ObtenerFotos("/storage/emulated/0"));
+            List<FotoItem> fotos = await Task.Run(() => MdUtilidades.ObtenerFotos("/storage/emulated/0"));
             MdUtilidades.SetTotalFotos(fotos.Count);
 
-            var GrupoAño = await Task.Run(() => MdUtilidades.AgruparFotos(fotos));
+            List<GrupoAño> GrupoAño = await Task.Run(() => MdUtilidades.AgruparFotos(fotos));
 
             MainThread.BeginInvokeOnMainThread(() =>
             {

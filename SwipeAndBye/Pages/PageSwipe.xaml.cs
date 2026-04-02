@@ -28,10 +28,10 @@ public partial class PageSwipe
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        MainThread.BeginInvokeOnMainThread(async () => 
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
             LblContador.Text = $"{_index + 1} / {_fotos.Count}";
-            await MostrarActual(); 
+            await MostrarActual();
         });
     }
 
@@ -151,7 +151,7 @@ public partial class PageSwipe
             if (!File.Exists(foto.Ruta)) return;
 
             FileInfo info = new(foto.Ruta);
-            var tamaño = info.Length;
+            long tamaño = info.Length;
 
             File.SetAttributes(foto.Ruta, FileAttributes.Normal);
             File.Delete(foto.Ruta);
@@ -178,7 +178,7 @@ public partial class PageSwipe
             ImgActual.TranslationX = 0;
             ImgActual.Rotation = 0;
 
-            if(_index < _fotos.Count)
+            if (_index < _fotos.Count)
                 LblContador.Text = $"{_index + 1} / {_fotos.Count}";
 
             MostrarActual();

@@ -125,8 +125,8 @@ public class MainActivity : MauiAppCompatActivity
 
             _tcsPermiso = new TaskCompletionSource<bool>();
 
-            var uri = Uri.Parse("package:" + activity.PackageName);
-            var intent = new Intent(Settings.ActionManageAppAllFilesAccessPermission, uri);
+            Uri? uri = Uri.Parse("package:" + activity.PackageName);
+            Intent intent = new(Settings.ActionManageAppAllFilesAccessPermission, uri);
 
             activity.StartActivityForResult(intent, RequestCode);
         }

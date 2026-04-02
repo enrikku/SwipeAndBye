@@ -31,7 +31,7 @@ public static class MdUtilidades
                 return;
 
             // Archivos
-            var files = Array.Empty<string>();
+            string[] files = Array.Empty<string>();
             try
             {
                 files = Directory.GetFiles(path);
@@ -41,7 +41,7 @@ public static class MdUtilidades
                 Console.WriteLine($"No se pudo acceder a archivos en {path}: {ex.Message}");
             }
 
-            foreach (var file in files)
+            foreach (string file in files)
                 try
                 {
                     FileAttributes fileAttributes = File.GetAttributes(file);
@@ -49,7 +49,7 @@ public static class MdUtilidades
                     if (fileAttributes.HasFlag(FileAttributes.Hidden) || fileAttributes.HasFlag(FileAttributes.System))
                         continue;
 
-                    var ext = Path.GetExtension(file);
+                    string ext = Path.GetExtension(file);
                     if (!ExtensionesImagen.Contains(ext))
                         continue;
 
@@ -69,7 +69,7 @@ public static class MdUtilidades
                 }
 
             // Subdirectorios
-            var directories = Array.Empty<string>();
+            string[] directories = Array.Empty<string>();
             try
             {
                 directories = Directory.GetDirectories(path);
@@ -79,7 +79,7 @@ public static class MdUtilidades
                 Console.WriteLine($"No se pudo acceder a carpetas en {path}: {ex.Message}");
             }
 
-            foreach (var dir in directories) AnalizarDirectorio(dir, resultado);
+            foreach (string dir in directories) AnalizarDirectorio(dir, resultado);
         }
         catch (UnauthorizedAccessException)
         {
@@ -123,8 +123,8 @@ public static class MdUtilidades
 
     public static void SumarBytesAhorrados(long bytes)
     {
-        var actual = Preferences.Get(KEY_BYTES_AHORRADOS, 0L);
-        var nuevo = actual + bytes;
+        long actual = Preferences.Get(KEY_BYTES_AHORRADOS, 0L);
+        long nuevo = actual + bytes;
 
         Preferences.Set(KEY_BYTES_AHORRADOS, nuevo);
     }
@@ -136,7 +136,7 @@ public static class MdUtilidades
 
     public static void SumarImagenesEliminadas()
     {
-        var actual = Preferences.Get(KEY_FOTOS_ELIMINADAS, 0);
+        int actual = Preferences.Get(KEY_FOTOS_ELIMINADAS, 0);
         actual++;
 
         Preferences.Set(KEY_FOTOS_ELIMINADAS, actual);
@@ -149,7 +149,7 @@ public static class MdUtilidades
 
     public static void RestarTotalFotos()
     {
-        var actual = Preferences.Get(KEY_TOTAL_FOTOS, 0);
+        int actual = Preferences.Get(KEY_TOTAL_FOTOS, 0);
         actual--;
 
         Preferences.Set(KEY_TOTAL_FOTOS, actual);
