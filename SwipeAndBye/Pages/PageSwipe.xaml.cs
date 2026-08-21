@@ -4,20 +4,43 @@ public partial class PageSwipe
 {
     #region Constructor
 
-    public PageSwipe(List<FotoItem> fotos)
+    public PageSwipe(GrupoMes mes)
     {
         InitializeComponent();
-        _fotos = fotos;
+
+        Mes = mes;
+
+        // Copia: el modelo de MainPage no se toca hasta que se cierra esta página
+        _fotos = new List<FotoItem>(mes.Fotos);
     }
 
     #endregion Constructor
 
     #region "Variables"
 
+    private const double UmbralSwipe = 120;
+    private const uint DuracionAnimacion = 200;
+
     private readonly List<FotoItem> _fotos;
+    private readonly List<FotoItem> _eliminadas = [];
+    private readonly Stack<Movimiento> _historial = new();
 
     private int _index;
     private double _totalX;
+
+    private bool _iniciado;
+    private bool _procesando;
+    private bool _finalizado;
+    private bool _cerrando;
+
+    /// <summary>Mes que se está revisando. MainPage lo usa para aplicar los borrados sin reescanear.</summary>
+    public GrupoMes Mes { get; }
+
+    /// <summary>Fotos que siguen en la papelera al cerrar (las deshechas ya no están aquí).</summary>
+    public IReadOnlyList<FotoItem> Eliminadas => _eliminadas;
+
+    /// <summary>Una foto ya resuelta. <see cref="Papelera" /> es null si se conservó.</summary>
+    private sealed record Movimiento(FotoItem Foto, EntradaPapelera? Papelera);
 
     #endregion "Variables"
 
@@ -28,25 +51,26 @@ public partial class PageSwipe
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        MainThread.BeginInvokeOnMainThread(async () =>
+
+        // Solo la primera vez: OnAppearing se vuelve a disparar al cerrar dialogos
+        if (_iniciado) return;
+        _iniciado = true;
+
+        try
         {
-            LblContador.Text = $"{_index + 1} / {_fotos.Count}";
-            await MostrarActual();
-        });
+            await MostrarActualAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al mostrar la primera foto: {ex.Message}");
+            MdUtilidades.MostrarToast("Error al cargar las fotos");
+        }
     }
 
     protected override bool OnBackButtonPressed()
     {
-        try
-        {
-            Navigation.PopModalAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al volver atrás: {ex.Message}");
-            Toast.MakeText(Platform.CurrentActivity, "Error al abrir la página de swipe", ToastLength.Short).Show();
-        }
-
+        // CerrarAsync captura sus propias excepciones, no queda ninguna sin observar
+        _ = CerrarAsync();
         return true;
     }
 
@@ -54,52 +78,62 @@ public partial class PageSwipe
 
     #region "Eventos de Boton"
 
-    private void BtnDelete_OnClicked(object? sender, EventArgs e)
+    private async void BtnDelete_OnClicked(object? sender, EventArgs e)
     {
-        SwipeIzquierda();
+        await ProcesarSwipeAsync(false);
     }
 
-    private void BtnConservar_OnClicked(object? sender, EventArgs e)
+    private async void BtnConservar_OnClicked(object? sender, EventArgs e)
     {
-        SwipeDerecha();
+        await ProcesarSwipeAsync(true);
+    }
+
+    private async void BtnDeshacer_OnTapped(object? sender, TappedEventArgs e)
+    {
+        await DeshacerAsync();
     }
 
     #endregion "Eventos de Boton"
 
     #region "Eventos de Pan"
 
-    private void OnPanUpdated(object sender, PanUpdatedEventArgs e)
+    private async void OnPanUpdated(object sender, PanUpdatedEventArgs e)
     {
-        LblLike.Opacity = Math.Max(0, e.TotalX / 200);
-        LblDelete.Opacity = Math.Max(0, -e.TotalX / 200);
+        // Ignorar el gesto mientras se anima un swipe o si ya no quedan fotos
+        if (_procesando || _finalizado || _index >= _fotos.Count) return;
 
-        switch (e.StatusType)
+        try
         {
-            case GestureStatus.Started:
-                _totalX = 0;
-                break;
+            switch (e.StatusType)
+            {
+                case GestureStatus.Started:
+                    _totalX = 0;
+                    break;
 
-            case GestureStatus.Running:
-                _totalX = e.TotalX;
+                case GestureStatus.Running:
+                    _totalX = e.TotalX;
 
-                ImgActual.TranslationX = _totalX;
-                ImgActual.Rotation = Math.Clamp(_totalX / 20, -15, 15);
-                break;
+                    ImgActual.TranslationX = _totalX;
+                    ImgActual.Rotation = Math.Clamp(_totalX / 20, -15, 15);
 
-            case GestureStatus.Completed:
-                if (Math.Abs(_totalX) > 120)
-                {
-                    if (_totalX > 0)
-                        SwipeDerecha();
+                    LblLike.Opacity = Math.Max(0, _totalX / 200);
+                    LblDelete.Opacity = Math.Max(0, -_totalX / 200);
+                    break;
+
+                case GestureStatus.Completed:
+                case GestureStatus.Canceled:
+                    if (e.StatusType == GestureStatus.Completed && Math.Abs(_totalX) > UmbralSwipe)
+                        await ProcesarSwipeAsync(_totalX > 0);
                     else
-                        SwipeIzquierda();
-                }
-                else
-                {
-                    ResetPosition();
-                }
+                        await ResetPositionAsync();
 
-                break;
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error en el gesto: {ex.Message}");
+            MdUtilidades.MostrarToast("Error al procesar el gesto");
         }
     }
 
@@ -109,80 +143,173 @@ public partial class PageSwipe
 
     #region "Funciones"
 
-    private async Task MostrarActual()
+    /// <summary>
+    /// Punto unico de avance. El guard <see cref="_procesando" /> impide que dos swipes solapados
+    /// (gesto + boton, o dos toques rapidos) incrementen el indice dos veces y borren la foto equivocada.
+    /// </summary>
+    private async Task ProcesarSwipeAsync(bool conservar)
     {
-        if (_index >= _fotos.Count)
-        {
-            await DisplayAlert("Fin", "No quedan fotos", "OK");
+        if (_procesando || _finalizado) return;
+        if (_index >= _fotos.Count) return;
 
-            await Navigation.PushModalAsync(new MainPage());
-            return;
-        }
+        _procesando = true;
 
-        ImgActual.Source = _fotos[_index].Ruta;
-    }
-
-    private async void ResetPosition()
-    {
-        await Task.WhenAll(
-            ImgActual.TranslateTo(0, 0, 200, Easing.SinOut),
-            ImgActual.RotateTo(0, 200, Easing.SinOut)
-        );
-    }
-
-    private async void SwipeDerecha()
-    {
-        await ImgActual.TranslateTo(1000, 0, 200);
-        SiguienteFoto();
-    }
-
-    private async void SwipeIzquierda()
-    {
-        FotoItem foto = _fotos[_index];
-        await ImgActual.TranslateTo(-1000, 0, 200);
-        BorrarFoto(foto);
-        SiguienteFoto();
-    }
-
-    private void BorrarFoto(FotoItem foto)
-    {
         try
         {
-            if (!File.Exists(foto.Ruta)) return;
+            FotoItem foto = _fotos[_index];
 
-            FileInfo info = new(foto.Ruta);
-            long tamaño = info.Length;
+            await ImgActual.TranslateTo(conservar ? 1000 : -1000, 0, DuracionAnimacion);
 
-            File.SetAttributes(foto.Ruta, FileAttributes.Normal);
-            File.Delete(foto.Ruta);
+            EntradaPapelera? papelera = null;
 
-            if (!File.Exists(foto.Ruta))
+            if (!conservar)
             {
-                MdUtilidades.SumarBytesAhorrados(tamaño);
-                MdUtilidades.SumarImagenesEliminadas();
-                MdUtilidades.RestarTotalFotos();
+                papelera = MdPapelera.Mover(foto);
+
+                if (papelera is null)
+                {
+                    // No se ha podido mover: la foto sigue donde estaba, no contamos nada
+                    MdUtilidades.MostrarToast("No se ha podido borrar la foto");
+                }
+                else
+                {
+                    MdUtilidades.SumarBytesAhorrados(papelera.Tamaño);
+                    MdUtilidades.SumarImagenesEliminadas();
+                    MdUtilidades.SumarTotalFotos(-1);
+
+                    _eliminadas.Add(foto);
+                }
             }
+
+            _historial.Push(new Movimiento(foto, papelera));
+            _index++;
+
+            await MostrarActualAsync();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error borrando: {ex.Message}");
-            Toast.MakeText(Platform.CurrentActivity, "Error al borrar la foto", ToastLength.Short).Show();
+            Console.WriteLine($"Error procesando el swipe: {ex.Message}");
+            MdUtilidades.MostrarToast("Error al procesar la foto");
+        }
+        finally
+        {
+            _procesando = false;
+            ActualizarDeshacer();
         }
     }
 
-    private void SiguienteFoto()
+    /// <summary>Retrocede una foto y, si esa foto se borró, la saca de la papelera.</summary>
+    private async Task DeshacerAsync()
     {
-        _index++;
-        MainThread.BeginInvokeOnMainThread(() =>
+        if (_procesando || _finalizado) return;
+        if (_historial.Count == 0) return;
+
+        _procesando = true;
+
+        try
         {
-            ImgActual.TranslationX = 0;
-            ImgActual.Rotation = 0;
+            Movimiento ultimo = _historial.Pop();
 
-            if (_index < _fotos.Count)
-                LblContador.Text = $"{_index + 1} / {_fotos.Count}";
+            if (ultimo.Papelera is not null)
+            {
+                if (MdPapelera.Restaurar(ultimo.Papelera))
+                {
+                    MdUtilidades.SumarBytesAhorrados(-ultimo.Papelera.Tamaño);
+                    MdUtilidades.SumarImagenesEliminadas(-1);
+                    MdUtilidades.SumarTotalFotos(1);
 
-            MostrarActual();
-        });
+                    _eliminadas.Remove(ultimo.Foto);
+                }
+                else
+                {
+                    MdUtilidades.MostrarToast("No se ha podido recuperar la foto");
+                }
+            }
+
+            _index = Math.Max(0, _index - 1);
+
+            await MostrarActualAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deshaciendo: {ex.Message}");
+            MdUtilidades.MostrarToast("Error al deshacer");
+        }
+        finally
+        {
+            _procesando = false;
+            ActualizarDeshacer();
+        }
+    }
+
+    private void ActualizarDeshacer()
+    {
+        bool hay = _historial.Count > 0 && !_finalizado;
+
+        BorderDeshacer.Opacity = hay ? 1 : 0.3;
+    }
+
+    private async Task MostrarActualAsync()
+    {
+        ImgActual.TranslationX = 0;
+        ImgActual.Rotation = 0;
+        LblLike.Opacity = 0;
+        LblDelete.Opacity = 0;
+
+        if (_index >= _fotos.Count)
+        {
+            ImgActual.Source = null;
+            await FinalizarAsync();
+            return;
+        }
+
+        FotoItem foto = _fotos[_index];
+
+        LblContador.Text = $"{_index + 1} / {_fotos.Count}";
+        ImgActual.Source = ImageSource.FromFile(foto.Ruta);
+
+        // TalkBack no puede describir la foto, pero sí decir por cuál vas
+        SemanticProperties.SetDescription(ImgActual, $"Foto {_index + 1} de {_fotos.Count}: {foto.Nombre}");
+    }
+
+    private async Task FinalizarAsync()
+    {
+        if (_finalizado) return;
+        _finalizado = true;
+
+        LblContador.Text = $"{_fotos.Count} / {_fotos.Count}";
+
+        await DisplayAlert("Fin", "No quedan fotos", "OK");
+        await CerrarAsync();
+    }
+
+    private async Task CerrarAsync()
+    {
+        if (_cerrando) return;
+        _cerrando = true;
+
+        try
+        {
+            if (Navigation.ModalStack.Count > 0)
+                await Navigation.PopModalAsync();
+        }
+        catch (Exception ex)
+        {
+            _cerrando = false;
+
+            Console.WriteLine($"Error al volver atrás: {ex.Message}");
+            MdUtilidades.MostrarToast("Error al cerrar la página");
+        }
+    }
+
+    private async Task ResetPositionAsync()
+    {
+        await Task.WhenAll(
+            ImgActual.TranslateTo(0, 0, DuracionAnimacion, Easing.SinOut),
+            ImgActual.RotateTo(0, DuracionAnimacion, Easing.SinOut),
+            LblLike.FadeTo(0, DuracionAnimacion),
+            LblDelete.FadeTo(0, DuracionAnimacion)
+        );
     }
 
     #endregion "Funciones"

@@ -1,3 +1,5 @@
+using Android.App;
+
 namespace SwipeAndBye.Modulos;
 
 public static class MdUtilidades
@@ -11,18 +13,48 @@ public static class MdUtilidades
         ".jpg", ".jpeg", ".png"
     };
 
-    public static List<FotoItem> ObtenerFotos(string rootPath)
+    /// <summary>Raíz del almacenamiento compartido. La papelera vive aquí para que mover sea un rename.</summary>
+    public static string RutaAlmacenamiento =>
+        Android.OS.Environment.ExternalStorageDirectory?.AbsolutePath ?? "/storage/emulated/0";
+
+    public static List<FotoItem> ObtenerFotos(string rootPath, IProgress<ProgresoEscaneo>? progreso = null)
     {
-        List<FotoItem> resultado = new();
-        AnalizarDirectorio(rootPath, resultado);
-        return resultado;
+        EstadoEscaneo estado = new(progreso);
+        AnalizarDirectorio(rootPath, estado);
+
+        return estado.Fotos;
     }
 
-    private static void AnalizarDirectorio(string path, List<FotoItem> resultado)
+    /// <summary>Acumula el resultado del escaneo y va avisando del avance sin saturar la UI.</summary>
+    private sealed class EstadoEscaneo(IProgress<ProgresoEscaneo>? progreso)
+    {
+        private const int MilisegundosEntreAvisos = 200;
+
+        private DateTime _ultimoAviso = DateTime.MinValue;
+
+        public List<FotoItem> Fotos { get; } = [];
+
+        public void Reportar(string carpeta)
+        {
+            if (progreso is null) return;
+
+            DateTime ahora = DateTime.UtcNow;
+            if ((ahora - _ultimoAviso).TotalMilliseconds < MilisegundosEntreAvisos) return;
+
+            _ultimoAviso = ahora;
+            progreso.Report(new ProgresoEscaneo(Fotos.Count, carpeta));
+        }
+    }
+
+    private static void AnalizarDirectorio(string path, EstadoEscaneo estado)
     {
         try
         {
             if (path.Contains("WhatsApp Backup Excluded Stickers", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            // Nuestra papelera ya es oculta, pero mejor no depender solo de eso
+            if (path.Contains(MdPapelera.NombreCarpeta, StringComparison.OrdinalIgnoreCase))
                 return;
 
             // Ignorar carpetas ocultas/sistema
@@ -55,11 +87,15 @@ public static class MdUtilidades
 
                     FileInfo info = new(file);
 
-                    resultado.Add(new FotoItem
+                    estado.Fotos.Add(new FotoItem
                     {
                         Ruta = file,
                         Nombre = info.Name,
-                        Fecha = info.LastWriteTime,
+
+                        // La fecha del archivo cambia al copiar, mover o restaurar un backup.
+                        // La del EXIF es la de la toma, que es por la que agrupamos.
+                        Fecha = MdExif.ObtenerFecha(file) ?? info.LastWriteTime,
+
                         Tamaño = info.Length
                     });
                 }
@@ -67,6 +103,8 @@ public static class MdUtilidades
                 {
                     Console.WriteLine($"Error archivo {file}: {ex.Message}");
                 }
+
+            estado.Reportar(Path.GetFileName(path));
 
             // Subdirectorios
             string[] directories = Array.Empty<string>();
@@ -79,7 +117,7 @@ public static class MdUtilidades
                 Console.WriteLine($"No se pudo acceder a carpetas en {path}: {ex.Message}");
             }
 
-            foreach (string dir in directories) AnalizarDirectorio(dir, resultado);
+            foreach (string dir in directories) AnalizarDirectorio(dir, estado);
         }
         catch (UnauthorizedAccessException)
         {
@@ -98,7 +136,7 @@ public static class MdUtilidades
             .Select(grupoAño => new GrupoAño
             {
                 Año = grupoAño.Key,
-                Meses = grupoAño
+                Meses = new ObservableCollection<GrupoMes>(grupoAño
                     .GroupBy(f => f.Fecha.Month)
                     .Select(grupoMes => new GrupoMes
                     {
@@ -107,8 +145,7 @@ public static class MdUtilidades
                             .OrderByDescending(f => f.Fecha)
                             .ToList()
                     })
-                    .OrderByDescending(m => m.Mes)
-                    .ToList()
+                    .OrderByDescending(m => m.Mes))
             })
             .OrderByDescending(a => a.Año)
             .ToList();
@@ -121,10 +158,10 @@ public static class MdUtilidades
         return Preferences.Get(KEY_BYTES_AHORRADOS, 0L);
     }
 
+    /// <summary>Acepta deltas negativos: al deshacer un borrado hay que descontar.</summary>
     public static void SumarBytesAhorrados(long bytes)
     {
-        long actual = Preferences.Get(KEY_BYTES_AHORRADOS, 0L);
-        long nuevo = actual + bytes;
+        long nuevo = Math.Max(0, Preferences.Get(KEY_BYTES_AHORRADOS, 0L) + bytes);
 
         Preferences.Set(KEY_BYTES_AHORRADOS, nuevo);
     }
@@ -134,12 +171,11 @@ public static class MdUtilidades
         return Preferences.Get(KEY_FOTOS_ELIMINADAS, 0);
     }
 
-    public static void SumarImagenesEliminadas()
+    public static void SumarImagenesEliminadas(int cantidad = 1)
     {
-        int actual = Preferences.Get(KEY_FOTOS_ELIMINADAS, 0);
-        actual++;
+        int nuevo = Math.Max(0, Preferences.Get(KEY_FOTOS_ELIMINADAS, 0) + cantidad);
 
-        Preferences.Set(KEY_FOTOS_ELIMINADAS, actual);
+        Preferences.Set(KEY_FOTOS_ELIMINADAS, nuevo);
     }
 
     public static int ObtenerTotalFotos()
@@ -147,16 +183,24 @@ public static class MdUtilidades
         return Preferences.Get(KEY_TOTAL_FOTOS, 0);
     }
 
-    public static void RestarTotalFotos()
+    public static void SumarTotalFotos(int cantidad)
     {
-        int actual = Preferences.Get(KEY_TOTAL_FOTOS, 0);
-        actual--;
+        int nuevo = Math.Max(0, Preferences.Get(KEY_TOTAL_FOTOS, 0) + cantidad);
 
-        Preferences.Set(KEY_TOTAL_FOTOS, actual);
+        Preferences.Set(KEY_TOTAL_FOTOS, nuevo);
     }
 
     public static void SetTotalFotos(int total)
     {
         Preferences.Set(KEY_TOTAL_FOTOS, total);
+    }
+
+    /// <summary>Muestra un Toast comprobando que haya actividad y siempre desde el hilo de UI.</summary>
+    public static void MostrarToast(string mensaje)
+    {
+        Activity? actividad = Platform.CurrentActivity;
+        if (actividad is null) return;
+
+        MainThread.BeginInvokeOnMainThread(() => Toast.MakeText(actividad, mensaje, ToastLength.Short)?.Show());
     }
 }

@@ -69,8 +69,36 @@
                 <ImageButton
                     BackgroundColor="Transparent"
                     Clicked="BtnDelete_OnClicked"
+                    SemanticProperties.Description="Descartar foto"
+                    SemanticProperties.Hint="La manda a la papelera; se puede deshacer"
                     Source="x.png" />
             </Frame>
+
+            <!-- Deshacer: devuelve la última foto de la papelera y retrocede una posición -->
+            <Border
+                x:Name="BorderDeshacer"
+                Grid.Column="1"
+                BackgroundColor="#333333"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 28"
+                HeightRequest="56"
+                WidthRequest="56"
+                Opacity="0.3"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                SemanticProperties.Description="Deshacer la última foto">
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="BtnDeshacer_OnTapped" />
+                </Border.GestureRecognizers>
+
+                <Label
+                    Text="↺"
+                    FontSize="28"
+                    TextColor="White"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center" />
+            </Border>
 
             <Frame
                 Grid.Column="2"
@@ -85,6 +113,8 @@
                 <ImageButton
                     BackgroundColor="Transparent"
                     Clicked="BtnConservar_OnClicked"
+                    SemanticProperties.Description="Conservar foto"
+                    SemanticProperties.Hint="Pasa a la siguiente sin borrar nada"
                     Source="like.png" />
             </Frame>
         </Grid>

@@ -1,204 +1,321 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:clases="clr-namespace:SwipeAndBye.Clases"
-             x:Class="SwipeAndBye.MainPage">
+<ContentPage
+    x:Class="SwipeAndBye.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:clases="clr-namespace:SwipeAndBye.Clases"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    BackgroundColor="Black">
     <Grid>
 
-        <ScrollView BackgroundColor="Black">
-            <Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto">
-                <!-- HEADER -->
+        <Grid ColumnDefinitions="*" RowDefinitions="Auto,*">
 
-                <Border
-                    StrokeThickness="0"
-                    BackgroundColor="#FFFFFF"
-                    Padding="16"
-                    Margin="12"
-                    StrokeShape="RoundRectangle 16">
+            <!--  HEADER  -->
+            <Border
+                Margin="12"
+                Padding="16"
+                BackgroundColor="#FFFFFF"
+                StrokeShape="RoundRectangle 16"
+                StrokeThickness="0">
 
-                    <Border.Shadow>
-                        <Shadow Brush="#22000000"
-                                Offset="0,4"
-                                Radius="12"
-                                Opacity="0.4" />
-                    </Border.Shadow>
+                <Border.Shadow>
+                    <Shadow
+                        Brush="#22000000"
+                        Opacity="0.4"
+                        Radius="12"
+                        Offset="0,4" />
+                </Border.Shadow>
 
-                    <Grid ColumnDefinitions="*,Auto,*,Auto,*"
-                          RowDefinitions="Auto"
-                          ColumnSpacing="12"
-                          VerticalOptions="Center">
+                <VerticalStackLayout Spacing="12">
 
-                        <!-- Fotos -->
+                    <Grid
+                        ColumnDefinitions="*,Auto,*,Auto,*"
+                        ColumnSpacing="12"
+                        RowDefinitions="Auto"
+                        VerticalOptions="Center">
+
+                        <!--  Fotos  -->
                         <VerticalStackLayout Spacing="4">
-                            <Label Text="Fotos"
-                                   FontSize="12"
-                                   HorizontalTextAlignment="Center"
-                                   TextColor="#888888" />
+                            <Label
+                                FontSize="12"
+                                HorizontalTextAlignment="Center"
+                                Text="Fotos"
+                                TextColor="#888888" />
 
-                            <Label x:Name="LblFotosEncontradas"
-                                   Text="0"
-                                   FontSize="26"
-                                   HorizontalTextAlignment="Center"
-                                   FontAttributes="Bold"
-                                   TextColor="#111111" />
+                            <Label
+                                x:Name="LblFotosEncontradas"
+                                FontAttributes="Bold"
+                                FontSize="26"
+                                HorizontalTextAlignment="Center"
+                                Text="0"
+                                TextColor="#111111" />
                         </VerticalStackLayout>
 
-                        <!-- Separador -->
-                        <BoxView Grid.Column="1"
-                                 WidthRequest="1"
-                                 BackgroundColor="#EEEEEE"
-                                 VerticalOptions="Fill" />
+                        <!--  Separador  -->
+                        <BoxView
+                            Grid.Column="1"
+                            BackgroundColor="#EEEEEE"
+                            VerticalOptions="Fill"
+                            WidthRequest="1" />
 
-                        <!-- Eliminadas -->
-                        <VerticalStackLayout Grid.Column="2"
-                                             Spacing="4"
-                                             HorizontalOptions="Center">
+                        <!--  Eliminadas  -->
+                        <VerticalStackLayout
+                            Grid.Column="2"
+                            HorizontalOptions="Center"
+                            Spacing="4">
 
-                            <Label Text="Eliminadas"
-                                   FontSize="12"
-                                   TextColor="#888888"
-                                   HorizontalTextAlignment="Center" />
+                            <Label
+                                FontSize="12"
+                                HorizontalTextAlignment="Center"
+                                Text="Eliminadas"
+                                TextColor="#888888" />
 
-                            <Label x:Name="LblEliminadas"
-                                   FontSize="26"
-                                   FontAttributes="Bold"
-                                   TextColor="#E74C3C"
-                                   HorizontalTextAlignment="Center" />
+                            <Label
+                                x:Name="LblEliminadas"
+                                FontAttributes="Bold"
+                                FontSize="26"
+                                HorizontalTextAlignment="Center"
+                                Text="0"
+                                TextColor="#E74C3C" />
                         </VerticalStackLayout>
 
-                        <!-- Separador -->
-                        <BoxView Grid.Column="3"
-                                 WidthRequest="1"
-                                 BackgroundColor="#EEEEEE"
-                                 VerticalOptions="Fill" />
+                        <!--  Separador  -->
+                        <BoxView
+                            Grid.Column="3"
+                            BackgroundColor="#EEEEEE"
+                            VerticalOptions="Fill"
+                            WidthRequest="1" />
 
-                        <!-- Liberado -->
-                        <VerticalStackLayout Grid.Column="4"
-                                             Spacing="4"
-                                             HorizontalOptions="Center">
+                        <!--  Liberado  -->
+                        <VerticalStackLayout
+                            Grid.Column="4"
+                            HorizontalOptions="Center"
+                            Spacing="4">
 
-                            <Label Text="Liberado"
-                                   FontSize="12"
-                                   TextColor="#888888"
-                                   HorizontalTextAlignment="Center" />
+                            <Label
+                                FontSize="12"
+                                HorizontalTextAlignment="Center"
+                                Text="Liberado"
+                                TextColor="#888888" />
 
-                            <Label x:Name="LblAhorro"
-                                   FontSize="20"
-                                   FontAttributes="Bold"
-                                   TextColor="#2ECC71"
-                                   HorizontalTextAlignment="Center" />
+                            <Label
+                                x:Name="LblAhorro"
+                                FontAttributes="Bold"
+                                FontSize="20"
+                                HorizontalTextAlignment="Center"
+                                Text="0 B"
+                                TextColor="#2ECC71" />
                         </VerticalStackLayout>
                     </Grid>
-                </Border>
 
-                <CollectionView ItemsSource="{Binding Años}" Grid.Row="1" x:Name="cv">
+                    <!--  Papelera: solo aparece si queda algo por purgar  -->
+                    <VerticalStackLayout
+                        x:Name="PanelPapelera"
+                        IsVisible="False"
+                        Spacing="12">
+
+                        <BoxView BackgroundColor="#EEEEEE" HeightRequest="1" />
+
+                        <VerticalStackLayout Spacing="2">
+                            <Label
+                                FontSize="12"
+                                Text="En la papelera"
+                                TextColor="#888888" />
+
+                            <Label
+                                x:Name="LblPapelera"
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                TextColor="#111111" />
+                        </VerticalStackLayout>
+
+                        <!--  A dos columnas iguales: "Recuperar todo" no cabe al lado del texto  -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+
+                            <Button
+                                x:Name="BtnRecuperar"
+                                Padding="8,0"
+                                BackgroundColor="#2ECC71"
+                                Clicked="BtnRecuperar_OnClicked"
+                                CornerRadius="18"
+                                FontSize="14"
+                                HeightRequest="38"
+                                Text="Recuperar todo"
+                                TextColor="White" />
+
+                            <Button
+                                x:Name="BtnVaciar"
+                                Grid.Column="1"
+                                Padding="8,0"
+                                BackgroundColor="#E74C3C"
+                                Clicked="BtnVaciar_OnClicked"
+                                CornerRadius="18"
+                                FontSize="14"
+                                HeightRequest="38"
+                                Text="Vaciar"
+                                TextColor="White" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+
+            <RefreshView
+                x:Name="Refresco"
+                Grid.Row="1"
+                Refreshing="Refresco_OnRefreshing">
+                <CollectionView x:Name="cv">
                     <CollectionView.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="clases:GrupoAño">
 
-                            <!-- EXPANDER AÑO -->
+                            <!--  EXPANDER AÑO  -->
                             <toolkit:Expander>
                                 <toolkit:Expander.Header>
-                                    <Grid Padding="10" x:DataType="clases:GrupoAño">
+                                    <Grid Padding="16,10">
                                         <Label
-                                            Text="{Binding Año}"
+                                            FontAttributes="Bold"
                                             FontSize="18"
-                                            FontAttributes="Bold" />
+                                            Text="{Binding Año}"
+                                            TextColor="White" />
 
                                         <Label
+                                            HorizontalOptions="End"
                                             Text="{Binding Count, StringFormat='({0})'}"
-                                            HorizontalOptions="End" />
+                                            TextColor="#AAAAAA" />
                                     </Grid>
                                 </toolkit:Expander.Header>
 
-                                <!-- MESES -->
-                                <CollectionView ItemsSource="{Binding Meses}">
-                                    <CollectionView.ItemsLayout>
-                                        <GridItemsLayout Orientation="Vertical"
-                                                         Span="2"
-                                                         HorizontalItemSpacing="10"
-                                                         VerticalItemSpacing="10" />
-                                    </CollectionView.ItemsLayout>
+                                <FlexLayout
+                                    Padding="6,0,6,12"
+                                    BindableLayout.ItemsSource="{Binding Meses}"
+                                    JustifyContent="Start"
+                                    Wrap="Wrap">
 
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate>
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="clases:GrupoMes">
 
-                                            <!-- EXPANDER MES -->
-                                            <toolkit:Expander>
-                                                <toolkit:Expander.Header>
-                                                    <VerticalStackLayout Spacing="6"
-                                                                         Padding="8"
-                                                                         x:DataType="clases:GrupoMes">
+                                            <Grid
+                                                Padding="6"
+                                                FlexLayout.Basis="50%"
+                                                SemanticProperties.Description="{Binding Descripcion}"
+                                                SemanticProperties.Hint="Abre la revisión de este mes">
 
-                                                        <!-- Imagen -->
-                                                        <Image Source="{Binding FotoPreview}"
-                                                               HeightRequest="100"
-                                                               Aspect="AspectFill">
+                                                <Grid.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_OnTapped" />
+                                                </Grid.GestureRecognizers>
 
-                                                            <Image.Clip>
-                                                                <RoundRectangleGeometry CornerRadius="10"
-                                                                                        Rect="0,0,200,100" />
-                                                            </Image.Clip>
+                                                <VerticalStackLayout Spacing="6">
 
-                                                            <Image.GestureRecognizers>
-                                                                <TapGestureRecognizer
-                                                                    Tapped="TapGestureRecognizer_OnTapped" />
-                                                            </Image.GestureRecognizers>
-                                                        </Image>
+                                                    <!--  Miniatura  -->
+                                                    <Border
+                                                        BackgroundColor="#1E1E1E"
+                                                        HeightRequest="100"
+                                                        StrokeShape="RoundRectangle 10"
+                                                        StrokeThickness="0">
 
-                                                        <!-- Mes -->
-                                                        <Label Text="{Binding NombreMes}"
-                                                               FontSize="14"
-                                                               FontAttributes="Bold"
-                                                               HorizontalTextAlignment="Center" />
+                                                        <Image
+                                                            Aspect="AspectFill"
+                                                            HeightRequest="100"
+                                                            Source="{Binding Miniatura}" />
+                                                    </Border>
 
-                                                        <!-- Count -->
-                                                        <Label Text="{Binding Count, StringFormat='{0} fotos'}"
-                                                               FontSize="12"
-                                                               TextColor="#888888"
-                                                               HorizontalTextAlignment="Center" />
-                                                    </VerticalStackLayout>
-                                                </toolkit:Expander.Header>
-                                            </toolkit:Expander>
+                                                    <!--  Mes  -->
+                                                    <Label
+                                                        FontAttributes="Bold"
+                                                        FontSize="14"
+                                                        HorizontalTextAlignment="Center"
+                                                        Text="{Binding NombreMes}"
+                                                        TextColor="White" />
+
+                                                    <!--  Count  -->
+                                                    <Label
+                                                        FontSize="12"
+                                                        HorizontalTextAlignment="Center"
+                                                        Text="{Binding Count, StringFormat='{0} fotos'}"
+                                                        TextColor="#888888" />
+                                                </VerticalStackLayout>
+                                            </Grid>
                                         </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
+                                    </BindableLayout.ItemTemplate>
+                                </FlexLayout>
                             </toolkit:Expander>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-            </Grid>
-        </ScrollView>
+            </RefreshView>
+
+            <!--  Solo se muestra tras un escaneo que no ha encontrado nada  -->
+            <VerticalStackLayout
+                x:Name="PanelVacio"
+                Grid.Row="1"
+                Padding="32"
+                HorizontalOptions="Center"
+                IsVisible="False"
+                Spacing="8"
+                VerticalOptions="Center">
+
+                <Label
+                    FontAttributes="Bold"
+                    FontSize="18"
+                    HorizontalTextAlignment="Center"
+                    Text="No se han encontrado fotos"
+                    TextColor="White" />
+
+                <Label
+                    FontSize="14"
+                    HorizontalTextAlignment="Center"
+                    Text="Desliza hacia abajo para volver a buscar."
+                    TextColor="#888888" />
+            </VerticalStackLayout>
+        </Grid>
 
         <Border
             x:Name="BorderIndicator"
-            StrokeThickness="0"
+            Padding="24"
             BackgroundColor="#CC000000"
-            Padding="20"
-            StrokeShape="RoundRectangle 16"
             HorizontalOptions="Center"
+            IsVisible="False"
+            StrokeShape="RoundRectangle 16"
+            StrokeThickness="0"
             VerticalOptions="Center"
-            WidthRequest="120"
-            HeightRequest="120"
-            IsVisible="False">
+            WidthRequest="260">
 
             <Border.Shadow>
-                <Shadow Brush="#22000000"
-                        Offset="0,4"
-                        Radius="12"
-                        Opacity="0.4" />
+                <Shadow
+                    Brush="#22000000"
+                    Opacity="0.4"
+                    Radius="12"
+                    Offset="0,4" />
             </Border.Shadow>
 
-            <ActivityIndicator
-                x:Name="Indicator"
-                IsRunning="True"
-                IsVisible="True"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"
-                Color="White"
-                WidthRequest="40"
-                HeightRequest="40" />
+            <VerticalStackLayout Spacing="12">
+
+                <ActivityIndicator
+                    x:Name="Indicator"
+                    HeightRequest="40"
+                    HorizontalOptions="Center"
+                    IsRunning="True"
+                    IsVisible="True"
+                    WidthRequest="40"
+                    Color="White" />
+
+                <!--  No hay porcentaje: el total no se sabe hasta acabar de recorrer el disco  -->
+                <Label
+                    x:Name="LblProgreso"
+                    FontAttributes="Bold"
+                    FontSize="15"
+                    HorizontalTextAlignment="Center"
+                    Text="Buscando fotos…"
+                    TextColor="White" />
+
+                <Label
+                    x:Name="LblProgresoCarpeta"
+                    FontSize="11"
+                    HorizontalTextAlignment="Center"
+                    LineBreakMode="TailTruncation"
+                    MaxLines="1"
+                    TextColor="#AAAAAA" />
+            </VerticalStackLayout>
         </Border>
     </Grid>
 </ContentPage>
